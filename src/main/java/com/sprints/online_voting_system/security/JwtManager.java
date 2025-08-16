@@ -10,120 +10,67 @@ import javax.crypto.SecretKey;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
-import java.util.Map;
 
 @Slf4j
 @Component
 public class JwtManager {
 
-    @Value("${jwt.secret:mySecretKeyForVotingSystemThatShouldBeAtLeast256BitsLongForHS256Algorithm}")
+    /**
+        CRITICAL: The fallback secret must be at least 32 characters for HS256 algorithm
+        DO NOT UNDER ANY CIRCUMSTANCES MAKE THE SECRET LESS THAN  32 CHAR
+        I SPENT AN HOUR NOT KNOWING HOW DOES @REQUIREDARCGS NOT WORK
+    */
+    @Value("${JWT_SECRET:mySecretKeyForVotingSystemThatShouldBeAtLeast256BitsLongForHS256AlgorithmSecureFallback}")
     private String jwtSecret;
 
-    @Value("${jwt.expiration:86400}") // Default 24 hours in seconds
+    @Value("${JWT_EXPIRATION:86400}") // Default 24 hours in seconds
     private long jwtExpirationInSeconds;
 
     private SecretKey getSigningKey() {
+        // Validate secret length to prevent runtime exceptions
+        if (jwtSecret.getBytes().length < 32) {
+            throw new IllegalArgumentException("JWT secret too short for HS256 algorithm");
+        }
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
 
-    /**
-     * Generate JWT token with custom claims
-     * @param username the username
-     * @param customClaims additional claims to include in the token
-     * @return JWT token string
-     */
-    public String generateToken(String username, Map<String, Object> customClaims) {
+    public String generateToken(Long userId, String role) {
         Instant now = Instant.now();
         Instant expiration = now.plus(jwtExpirationInSeconds, ChronoUnit.SECONDS);
 
-        JwtBuilder builder = Jwts.builder()
-                .subject(username)
+        return Jwts.builder()
+                .subject(String.valueOf(userId)) // Use userId as subject
+                .claim("role", role)
+                .claim("userId", userId)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(expiration))
-                .signWith(getSigningKey());
-
-        // Add custom claims
-        if (customClaims != null && !customClaims.isEmpty()) {
-            customClaims.forEach(builder::claim);
-        }
-
-        return builder.compact();
-    }
-
-    /**
-     * Generate JWT token with username only
-     * @param username the username
-     * @return JWT token string
-     */
-    public String generateToken(String username) {
-        return generateToken(username, (String) null);
-    }
-
-    /**
-     * Generate JWT token with username and role
-     * @param username the username
-     * @param role the user role
-     * @return JWT token string
-     */
-    public String generateToken(String username, String role) {
-        return generateToken(username, Map.of("role", role));
-    }
-
-    /**
-     * Generate JWT token with username, role, and userId
-     * @param username the username
-     * @param role the user role
-     * @param userId the user ID
-     * @return JWT token string
-     */
-    public String generateToken(String username, String role, Long userId) {
-        return generateToken(username, Map.of(
-                "role", role,
-                "userId", userId
-        ));
-    }
-
-    /**
-     * Extract username from JWT token
-     * @param token JWT token
-     * @return username
-     */
-    public String getUsernameFromToken(String token) {
-        return getEncodedElementFromToken(token).getSubject();
-    }
-
-    /**
-     * Extract custom claim from JWT token
-     * @param token JWT token
-     * @param claimName name of the claim
-     * @param claimType class type of the claim
-     * @return claim value
-     */
-    public <T> T getClaimFromToken(String token, String claimName, Class<T> claimType) {
-        Claims claims = getEncodedElementFromToken(token);
-        return claims.get(claimName, claimType);
-    }
-
-    /**
-     * Extract role from JWT token
-     * @param token JWT token
-     * @return role
-     */
-    public String getRoleFromToken(String token) {
-        return getClaimFromToken(token, "role", String.class);
+                .signWith(getSigningKey())
+                .compact();
     }
 
     public Long getUserIdFromToken(String token) {
-        return getClaimFromToken(token, "userId", Long.class);
+        try {
+            Claims claims = getClaimsFromToken(token);
+            return claims.get("userId", Long.class);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid JWT token", e);
+        }
+    }
+
+    public String getRoleFromToken(String token) {
+        try {
+            Claims claims = getClaimsFromToken(token);
+            return claims.get("role", String.class);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid JWT token", e);
+        }
     }
 
     public Date getExpirationDateFromToken(String token) {
-        return getEncodedElementFromToken(token).getExpiration();
+        return getClaimsFromToken(token).getExpiration();
     }
 
-    // That is a big function
-    // Will be extremely useful TBH
-    public Claims getEncodedElementFromToken(String token) {
+    private Claims getClaimsFromToken(String token) {
         try {
             return Jwts.parser()
                     .verifyWith(getSigningKey())
@@ -131,7 +78,6 @@ public class JwtManager {
                     .parseSignedClaims(token)
                     .getPayload();
         } catch (JwtException e) {
-            log.error("Error parsing JWT token: {}", e.getMessage());
             throw new IllegalArgumentException("Invalid JWT token", e);
         }
     }
@@ -144,15 +90,15 @@ public class JwtManager {
                     .parseSignedClaims(token);
             return true;
         } catch (ExpiredJwtException e) {
-            log.warn("JWT token is expired: {}", e.getMessage());
+            System.out.println("JWT token is expired: {}" + e.getMessage());
         } catch (UnsupportedJwtException e) {
-            log.warn("JWT token is unsupported: {}", e.getMessage());
+            System.out.println("JWT token is unsupported: {}" + e.getMessage());
         } catch (MalformedJwtException e) {
-            log.warn("JWT token is malformed: {}", e.getMessage());
+            System.out.println("JWT token is malformed: {}" + e.getMessage());
         } catch (IllegalArgumentException e) {
-            log.warn("JWT token is invalid: {}", e.getMessage());
+            System.out.println("JWT token is invalid: {}" + e.getMessage());
         } catch (Exception e) {
-            log.error("JWT token validation error: {}", e.getMessage());
+                System.out.println("JWT token validation error: {}" + e.getMessage());
         }
         return false;
     }
@@ -166,11 +112,6 @@ public class JwtManager {
         }
     }
 
-    /**
-     * Extract token from Authorization header
-     * @param authHeader Authorization header value
-     * @return JWT token without "Bearer " prefix
-     */
     public String extractTokenFromHeader(String authHeader) {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             return authHeader.substring(7);
