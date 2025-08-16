@@ -26,6 +26,7 @@ public class AuthController {
         Long userId = 1L;
         Role userRole = Role.ROLE_VOTER;
 
+        // Later we can work it be in the service layer
         String token = authManager.generateToken(userId, userRole);
 
         return ResponseEntity.ok(new AuthResponse(token, userId, userRole));
@@ -38,6 +39,7 @@ public class AuthController {
         Long newUserId = 2L;
         Role userRole = Role.ROLE_ADMIN;
 
+        // Later we can work it be in the service layer
         String token = authManager.generateToken(newUserId, userRole);
 
         return ResponseEntity.ok(new AuthResponse(token, newUserId, userRole));
@@ -49,24 +51,54 @@ public class AuthController {
     public static class LoginRequest {
         private String username;
         private String password;
+
         // getters and setters
-        public String getUsername() { return username; }
-        public void setUsername(String username) { this.username = username; }
-        public String getPassword() { return password; }
-        public void setPassword(String password) { this.password = password; }
+        public String getUsername() {
+            return username;
+        }
+
+        public void setUsername(String username) {
+            this.username = username;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
     }
 
     public static class RegisterRequest {
         private String username;
         private String password;
         private String email;
+
         // getters and setters
-        public String getUsername() { return username; }
-        public void setUsername(String username) { this.username = username; }
-        public String getPassword() { return password; }
-        public void setPassword(String password) { this.password = password; }
-        public String getEmail() { return email; }
-        public void setEmail(String email) { this.email = email; }
+        public String getUsername() {
+            return username;
+        }
+
+        public void setUsername(String username) {
+            this.username = username;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public void setEmail(String email) {
+            this.email = email;
+        }
     }
 
     public static class AuthResponse {
@@ -81,11 +113,28 @@ public class AuthController {
         }
 
         // getters and setters
-        public String getToken() { return token; }
-        public void setToken(String token) { this.token = token; }
-        public Long getUserId() { return userId; }
-        public void setUserId(Long userId) { this.userId = userId; }
-        public Role getRole() { return role; }
-        public void setRole(Role role) { this.role = role; }
+        public String getToken() {
+            return token;
+        }
+
+        public void setToken(String token) {
+            this.token = token;
+        }
+
+        public Long getUserId() {
+            return userId;
+        }
+
+        public void setUserId(Long userId) {
+            this.userId = userId;
+        }
+
+        public Role getRole() {
+            return role;
+        }
+
+        public void setRole(Role role) {
+            this.role = role;
+        }
     }
 }
