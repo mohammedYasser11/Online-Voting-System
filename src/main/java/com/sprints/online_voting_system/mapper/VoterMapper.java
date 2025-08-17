@@ -14,7 +14,9 @@ public class VoterMapper
         voterDto.setName(voter.getName());
         voterDto.setId(voter.getId());
         voterDto.setCity(voter.getCity());
-        voterDto.setUser(voter.getUser());
+        voterDto.setEmail(voter.getUser().getEmail());
+        voterDto.setPassword(voter.getUser().getPassword());
+        voterDto.setRole(voter.getUser().getRole().name());
         voterDto.setAssignedElections(voter.getElections().size());
         return voterDto;
     }

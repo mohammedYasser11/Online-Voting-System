@@ -40,7 +40,6 @@ public class VoterService {
         voter.getElections().add(election);
 
         electionRepository.save(election);
-        voterRepository.save(voter);
     }
 
     @Transactional
@@ -55,7 +54,6 @@ public class VoterService {
         voter.getElections().remove(election);
 
         electionRepository.save(election);
-        voterRepository.save(voter);
     }
 
     public List<VoterDto> getAllVoters() {

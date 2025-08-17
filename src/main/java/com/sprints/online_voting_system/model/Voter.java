@@ -1,14 +1,18 @@
 package com.sprints.online_voting_system.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Table(name = "voters")
-@Data
+@Setter
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Voter {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,5 +29,6 @@ public class Voter {
     private User user;
 
     @ManyToMany(mappedBy = "assignedVoters")
+    @JsonIgnore
     private Set<Election> elections = new HashSet<>();
 }

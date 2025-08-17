@@ -12,6 +12,8 @@ public class VoterDto {
     private Long id;
     private String name;
     private String city;
-    private User user;
+    private String email;
+    private String password;
+    private String role;
     private int assignedElections;
 }
