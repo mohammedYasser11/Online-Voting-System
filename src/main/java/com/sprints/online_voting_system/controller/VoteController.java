@@ -1,6 +1,7 @@
 package com.sprints.online_voting_system.controller;
 
 import com.sprints.online_voting_system.dto.VoteDto;
+import com.sprints.online_voting_system.dto.VoteStatusDto;
 import com.sprints.online_voting_system.service.VoteService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,9 +20,17 @@ public class VoteController {
 
     @PreAuthorize("hasRole('VOTER')")
     @PostMapping
-    public ResponseEntity<Void> castVote(@Valid @RequestBody VoteDto dto, Authentication authentication) {
+    public ResponseEntity<String> castVote(@Valid @RequestBody VoteDto dto, Authentication authentication) {
         String voterEmail = authentication.getName();
         voteService.castVote(voterEmail, dto.getElectionId(), dto.getCandidateId());
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.status(HttpStatus.CREATED).body("Vote cast successfully");
+    }
+
+    @PreAuthorize("hasRole('VOTER')")
+    @GetMapping("/status/{electionId}")
+    public ResponseEntity<VoteStatusDto> getVoteStatus(@PathVariable Long electionId, Authentication authentication) {
+        String voterEmail = authentication.getName();
+        VoteStatusDto status = voteService.getVoteStatus(voterEmail, electionId);
+        return ResponseEntity.ok(status);
     }
 }

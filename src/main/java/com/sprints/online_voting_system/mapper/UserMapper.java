@@ -16,13 +16,4 @@ public class UserMapper
         user.setName(registerUserDto.getName());
         return user;
     }
-
-    public RegisterUserDto convertToDto(User user)
-    {
-        RegisterUserDto registerUserDto = new RegisterUserDto();
-        registerUserDto.setName(user.getName());
-        registerUserDto.setEmail(user.getEmail());
-        registerUserDto.setCity(user.getCity());
-        return registerUserDto;
-    }
 }

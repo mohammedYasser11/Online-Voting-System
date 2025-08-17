@@ -6,13 +6,17 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
-public interface VoteRepository extends JpaRepository<Vote, Long>
-{
-    @Query(value = "select count(*) " +
-                    "from votes " +
-                    "where candidate_Id = :candidate_Id and election_Id = :election_Id"
-                    ,nativeQuery = true)
-    public Long countByCandidate_IdAndElection_Id(@Param("candidate_Id") Long candidate_Id,
-                                                  @Param("election_Id") Long election_Id);
+public interface VoteRepository extends JpaRepository<Vote, Long> {
+
+    @Query(value = "SELECT COUNT(*) " +
+            "FROM votes " +
+            "WHERE candidate_id = :candidateId AND election_id = :electionId",
+            nativeQuery = true)
+    Long countByCandidate_IdAndElection_Id(@Param("candidateId") Long candidateId,
+                                           @Param("electionId") Long electionId);
+
+    boolean existsByVoterIdAndElectionId(Long voterId, Long electionId);
 }

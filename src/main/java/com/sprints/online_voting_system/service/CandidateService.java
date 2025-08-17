@@ -7,7 +7,6 @@ import com.sprints.online_voting_system.model.Election;
 import com.sprints.online_voting_system.repository.CandidateRepository;
 import com.sprints.online_voting_system.repository.ElectionRepository;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;

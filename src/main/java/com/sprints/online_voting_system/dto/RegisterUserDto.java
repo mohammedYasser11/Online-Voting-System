@@ -1,5 +1,9 @@
 package com.sprints.online_voting_system.dto;
 
+import com.sprints.online_voting_system.model.Role;
+import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -26,4 +30,5 @@ public class RegisterUserDto
     @Size(min = 8, message = "Password must be at least 8 characters long")
     private String password;
 
+    private String role;
 }

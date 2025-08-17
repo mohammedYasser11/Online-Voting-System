@@ -5,7 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CandidateRepository extends JpaRepository<Candidate, Long>
-{
-    public boolean existsByName(String name);
+public interface CandidateRepository extends JpaRepository<Candidate, Long> {
+
+    // Check if candidate name already exists (globally)
+    boolean existsByName(String name);
 }

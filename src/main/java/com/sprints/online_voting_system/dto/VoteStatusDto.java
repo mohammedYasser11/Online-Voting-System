@@ -7,9 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ElectionResultDto
-{
-    private Long candidateId;
-    private String candidateName;
-    private Long voteCount;
+public class VoteStatusDto {
+    private boolean hasVoted;
+    private String electionName;
+    private Long electionId;
+    private boolean isElectionActive;
 }
