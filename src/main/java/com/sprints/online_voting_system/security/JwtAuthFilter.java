@@ -24,6 +24,7 @@ import java.util.List;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Override
     protected void doFilterInternal(
@@ -35,8 +36,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         try {
             String jwt = extractJwtFromRequest(request);
 
-            if (jwt != null && jwtUtil.validateToken(jwt) && !jwtUtil.isTokenExpired(jwt)) {
-                authenticateUser(request, jwt);
+            if(jwt != null) {
+                if (tokenBlacklistService.isTokenBlacklisted(jwt)) {
+                    logger.warn("JWT Token is blacklisted (logged out).");
+                    filterChain.doFilter(request, response);
+                    return; // Skip authentication for blacklisted tokens
+                }
+
+                if (jwtUtil.validateToken(jwt) && !jwtUtil.isTokenExpired(jwt)) {
+                    authenticateUser(request, jwt);
+                }
             }
         } catch (Exception e) {
             log.error("JWT Authentication failed: {}", e.getMessage());

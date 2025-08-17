@@ -11,12 +11,14 @@ import com.sprints.online_voting_system.model.Voter;
 import com.sprints.online_voting_system.repository.UserRepository;
 import com.sprints.online_voting_system.repository.VoterRepository;
 import com.sprints.online_voting_system.security.JwtUtil;
+import com.sprints.online_voting_system.security.TokenBlacklistService;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +33,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Transactional
     public String registerUser(RegisterUserDto registerUserDto) throws BadRequestException {
@@ -79,5 +82,21 @@ public class AuthService {
         } catch (Exception e) {
             throw new BadCredentialsException("Invalid email or password");
         }
+    }
+
+    @Transactional
+    public String logout(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new IllegalArgumentException("No valid token provided");
+        }
+
+        String token = authHeader.substring(7);
+
+        if (tokenBlacklistService.isTokenBlacklisted(token)) {
+            throw new IllegalStateException("Already logged out");
+        }
+
+        tokenBlacklistService.blacklistToken(token);
+        return "Logged out successfully";
     }
 }

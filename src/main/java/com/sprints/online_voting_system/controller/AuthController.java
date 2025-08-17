@@ -33,4 +33,16 @@ public class AuthController {
         AuthResponseDto response = new AuthResponseDto(token, dto.getEmail(), userRepository.findByEmail(dto.getEmail()).getRole().name(), "Login successful");
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<AuthResponseDto> logout(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String message = authService.logout(authHeader);
+            AuthResponseDto response = new AuthResponseDto(null, null, null, message);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            AuthResponseDto response = new AuthResponseDto(null, null, null, "Logout failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
 }
